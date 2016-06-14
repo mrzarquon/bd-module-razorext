@@ -19,17 +19,17 @@ class razorext {
     ensure => directory,
     owner => root,
     group => root,
-    chmod => 0644,
+    mode  => '0644',
   }
 
   exec {'rsync_and_zip_extensions':
-    command => '/bin/zip -r mk-extensions.zip lib',
-    onlyif  => '/bin/rsync --log-format=%f -a /opt/puppetlabs/puppet/cache/lib/facter/ /opt/puppetlabs/razorfacts/lib/ruby/facter | grep opt/puppetlabs',
+    command => 'zip -r mk-extensions.zip lib',
+    onlyif  => 'rsync --log-format=%f -a /opt/puppetlabs/puppet/cache/lib/facter/ /opt/puppetlabs/razorext/lib/ruby/facter | grep opt/puppetlabs',
     cwd     => '/opt/puppetlabs/razorext/',
-    path    => '/bin',
+    path    => '/bin:/usr/bin:/usr/local/bin',
   }
 
-  file {'/opt/puppetlabs/razorfacts/mk-extensions.zip':
+  file {'/opt/puppetlabs/razorext/mk-extensions.zip':
     ensure  => file,
     owner   => root,
     group   => root,
@@ -41,10 +41,10 @@ class razorext {
   yaml_setting { 'set-razor-extensions-md':
     target  => '/etc/puppetlabs/razor-server/config.yaml',
     key     => 'all/microkernel/extension-zip',
-    value   => ['/opt/puppetlabs/razorfacts/mk-extensions.zip'],
+    value   => ['/opt/puppetlabs/razorext/mk-extensions.zip'],
     require => [
       Exec['rsync_and_zip_extensions'],
-      File['/opt/puppetlabs/razorfacts/mk-extensions.zip']
+      File['/opt/puppetlabs/razorext/mk-extensions.zip']
     ],
     notify  => Service['pe-razor-server'],
   }
